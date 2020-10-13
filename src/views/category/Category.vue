@@ -120,7 +120,7 @@ export default {
   },
   //mounted是vue中的一个钩子函数，
   //一般在初始化页面完成后，再对dom节点进行相关操作
-  mounted() {
+  /* mounted() {
     this.scroll = new BScroll(document.querySelector(".wrapper"), {
       //监听实时滚动
       probeType: 3,
@@ -128,7 +128,7 @@ export default {
     });
     this.scroll.on("scroll", (position) => {console.log(position);});
     this.scroll.on("pullingUp",()=>{console.log('上拉加载更多');});
-  },
+  }, */
 };
 </script>
 
