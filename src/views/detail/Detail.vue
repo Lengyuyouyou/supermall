@@ -15,6 +15,12 @@
       <detail-comment-info ref="comment" :comment-info="commentInfo" />
       <good-list ref="recommend" :goods="recommends" />
     </scroll>
+    <back-top
+      @click.native="backClick"
+      v-show="isShowBackTop"
+      class="back-top"
+    />
+    <detail-bottom-bar @addCart="addToCart" class="detail-bottom" />
   </div>
 </template>
 
@@ -23,6 +29,8 @@ import DetailNavBar from "./childComps/DetailNavBar";
 import DetailSwiper from "./childComps/DetailSwiper";
 import DetailBaseInfo from "./childComps/DetailBaseInfo";
 import DetailShopInfo from "./childComps/DetailShopInfo";
+import DetailBottomBar from "./childComps/DetailBottonBar";
+
 import Scroll from "components/common/scroll/Scroll";
 import {
   getDetail,
@@ -35,7 +43,7 @@ import DetailGoodsInfo from "./childComps/DetailGoodsInfo";
 import DetailParamInfo from "./childComps/DetailParamInfo";
 import DetailCommentInfo from "./childComps/DetailCommentInfo";
 import GoodList from "components/content/goods/GoodList";
-import { itemListenerMixin } from "common/mixin";
+import { itemListenerMixin, backTopMixin } from "common/mixin";
 import { debounce } from "common/utils";
 
 export default {
@@ -50,8 +58,9 @@ export default {
     DetailCommentInfo,
     GoodList,
     Scroll,
+    DetailBottomBar,
   },
-  mixins: [itemListenerMixin],
+  mixins: [itemListenerMixin, backTopMixin],
   data() {
     return {
       iid: null,
@@ -64,7 +73,7 @@ export default {
       recommends: [],
       themeTopYs: [],
       getThemeTopY: null,
-      currentIndex:0
+      currentIndex: 0,
     };
   },
   created() {
@@ -117,6 +126,7 @@ export default {
       this.themeTopYs.push(this.$refs.params.$el.offsetTop - 44);
       this.themeTopYs.push(this.$refs.comment.$el.offsetTop - 44);
       this.themeTopYs.push(this.$refs.recommend.$el.offsetTop - 44);
+      this.themeTopYs.push(Number.MAX_VALUE);
     }, 200);
   },
   mounted() {},
@@ -140,20 +150,42 @@ export default {
     },
     contentScroll(position) {
       //1.获取y值
-      const positionY=-position.y
+      const positionY = -position.y;
       //2positionY和主题中的值进行对比
-      //[0,7938,9210,9454]
+      //[0,7938,9210,9454,非常大的值]
+      //Number.MAX_VALUE
       //positionY在0和7938之间，index=0
       //positionY在7983和9210之间，index=1
       //positionY在9120和9452之间，index=2
       //positionY大于等于9120值，index=3
-      let length=this.themeTopYs.length
-      for(let i =0;i<length;i++){
-        if(this.currentIndex!==i&&((i<length - 1&&positionY>=this.themeTopYs[i]&&positionY<this.themeTopYs[i+1])||(i===length-1 && positionY>=this.themeTopYs[i]))){
+      let length = this.themeTopYs.length;
+      for (let i = 0; i < length - 1; i++) {
+        //防止赋值过程过于频繁 普通做法
+        /* if(this.currentIndex!==i&&((i<length - 1&&positionY>=this.themeTopYs[i]&&positionY<this.themeTopYs[i+1])||(i===length-1 && positionY>=this.themeTopYs[i]))){
           this.currentIndex=i
-          this.$refs.nav.currentIndex=this.currentIndex
-        }
+          this.$refs.nav.currentIndex=this.currentIndex */
+        if (
+          this.currentIndex !== i &&
+          positionY >= this.themeTopYs[i] &&
+          positionY < this.themeTopYs[i + 1]
+        )
+          this.currentIndex = i;
+        this.$refs.nav.currentIndex = this.currentIndex;
       }
+      this.isShowBackTop = -position.y > 1000;
+    },
+    addToCart() {
+      window.alert("成功加入购物车");
+      //获取购物车需要展示的信息
+      const product = {};
+      product.image = this.topImages[0];
+      product.title = this.goods.title;
+      product.desc = this.goods.desc;
+      product.price = this.goods.realPrice;
+      product.iid = this.iid;
+      //将商品添加到购物车
+      //this.$store.commit('addCart', product)
+      this.$store.dispatch("addCart", product);
     },
   },
 };
@@ -173,5 +205,15 @@ export default {
 }
 .content {
   height: calc(100% - 44px);
+}
+.back-top {
+  position: absolute;
+  right: 8px;
+  bottom: 55px;
+}
+.detail-bottom {
+  position: absolute;
+  z-index: 11;
+  background-color: #fff;
 }
 </style>
