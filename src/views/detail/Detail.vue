@@ -21,6 +21,7 @@
       class="back-top"
     />
     <detail-bottom-bar @addCart="addToCart" class="detail-bottom" />
+    
   </div>
 </template>
 
@@ -45,6 +46,9 @@ import DetailCommentInfo from "./childComps/DetailCommentInfo";
 import GoodList from "components/content/goods/GoodList";
 import { itemListenerMixin, backTopMixin } from "common/mixin";
 import { debounce } from "common/utils";
+import {mapActions} from 'vuex'
+
+
 
 export default {
   name: "Detail",
@@ -59,6 +63,7 @@ export default {
     GoodList,
     Scroll,
     DetailBottomBar,
+    
   },
   mixins: [itemListenerMixin, backTopMixin],
   data() {
@@ -141,6 +146,10 @@ export default {
     this.$bus.$off("itemImageLoad", this.itemImgListener);
   },
   methods: {
+   /*  ...mapActions(['addCart']), */
+    ...mapActions({
+      addCart:'addCart'
+    }),
     imageLoad() {
       this.newRefresh();
       this.getThemeTopY();
@@ -175,7 +184,7 @@ export default {
       this.isShowBackTop = -position.y > 1000;
     },
     addToCart() {
-      window.alert("成功加入购物车");
+      
       //获取购物车需要展示的信息
       const product = {};
       product.image = this.topImages[0];
@@ -185,7 +194,12 @@ export default {
       product.iid = this.iid;
       //将商品添加到购物车
       //this.$store.commit('addCart', product)
-      this.$store.dispatch("addCart", product);
+      this.addCart(product).then(res=>{
+        console.log(res);
+      });
+      /* this.$store.dispatch("addCart", product).then(res=>{
+        console.log(res);
+      }); */
     },
   },
 };
@@ -205,15 +219,12 @@ export default {
 }
 .content {
   height: calc(100% - 44px);
+  overflow: hidden;
 }
 .back-top {
-  position: absolute;
+  position:fixed;
   right: 8px;
   bottom: 55px;
 }
-.detail-bottom {
-  position: absolute;
-  z-index: 11;
-  background-color: #fff;
-}
+
 </style>

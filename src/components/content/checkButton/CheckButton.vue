@@ -22,6 +22,6 @@ export default {
   border:2px solid #aaa
 }
 .check{
-  border-collapse: pink;
+  background-color:rgb(211, 15, 41);
 }
 </style>
